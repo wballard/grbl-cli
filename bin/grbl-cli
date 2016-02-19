@@ -1,0 +1,12 @@
+#!/usr/bin/env node
+/*
+Command line main interface, starts up vorpal and hands off
+to each of the various commands loaded as extensions.
+*/
+
+vorpal = require('vorpal')();
+
+vorpal
+  .use(require('../src/connect.js'))
+  .delimiter('grbl>')
+  .show();

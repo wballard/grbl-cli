@@ -1,0 +1,24 @@
+{
+  "name": "grbl-cli",
+  "version": "1.0.0",
+  "description": "A conversational command line interface to control your GRBL based CNC machine.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wballard/grbl-cli.git"
+  },
+  "author": "Will Ballard <wballard@mailframe.net>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wballard/grbl-cli/issues"
+  },
+  "homepage": "https://github.com/wballard/grbl-cli#readme",
+  "dependencies": {
+    "bluebird": "^3.3.1",
+    "serialport": "^2.0.6",
+    "vorpal": "^1.9.2"
+  }
+}
