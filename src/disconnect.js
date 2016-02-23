@@ -16,7 +16,7 @@ module.exports = function(vorpal, options) {
   vorpal
     .command('disconnect', 'Disconnect from your GRBL device')
     .action(function(args){
-      vorpal.immediate({action: 'close'});
+      vorpal.immediate({action: 'disconnect'});
       return Promise.resolve();
     })
 }

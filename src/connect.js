@@ -6,7 +6,6 @@ the serial port with a line oriented style.
 
 "use strict";
 var Promise = require('bluebird');
-var SerialPort = require("serialport").SerialPort
 var grbl = require('./grbl');
 
 module.exports = function(vorpal, options) {
@@ -19,13 +18,9 @@ module.exports = function(vorpal, options) {
         .map( (port) => `${port.comName}`.split('/')[2] )
     })
     .action(function(args){
+      args.action = 'connect';
       args.options.baudrate = Number(args.options.baudrate || 115200);
-      grbl(vorpal, new SerialPort(`/dev/${args.port}`, {
-        parser: serialport.parsers.readline("\n")
-        ,baudrate: args.options.baudrate
-      }
-
-      ));
+      grbl(vorpal, args);
       return Promise.resolve();
     })
 }
