@@ -7,7 +7,7 @@ Promise = require('bluebird');
 
 module.exports = function(vorpal, options) {
   vorpal
-    .command('laser <filename>', 'Run the context of a file with a laser cutter')
+    .command('laser <filename>', 'Run GCODE from a file, adjusted to run with a laser')
     .action(function(args){
       return Promise.resolve();
     })

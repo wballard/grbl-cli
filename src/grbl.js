@@ -46,80 +46,60 @@ All additional data is attached to the action.
 "use strict";
 var Rx = require('rx');
 var Promise = require('bluebird');
-var chalk = require('chalk');
-var serialport = require("serialport");
-
-var errorMessage = chalk.bold.red;
-var traceMessage = chalk.blue;
+var messages = require('./messages');
 
 /*
 Attach to vorpal on connection, this creates an overall event observable
 combining serial port data events and user supplied commands.
 */
-module.exports = function(vorpal, connect) {
-  let grbl = new serialport.SerialPort(
-      `/dev/${connect.port}`
-      ,{
-        parser: serialport.parsers.readline("\n")
-        ,baudrate: connect.options.baudrate
-      }
-    )
+class GRBL {
+  /*
+  Construction is about attaching a communication port.
+  */
+  constructor(vorpal, grblPort){
+    this.grblPort = grblPort;
+    //bridge out events coming in from the serial connection to grblPort
+    let open = Rx.Observable.fromEvent(grblPort, 'open')
+      .map(function(){
+        return {action: 'open'};
+      });
+    let close = Rx.Observable.fromEvent(grblPort, 'close')
+      .map(function(){
+        return {action: 'close'};
+      });
+    let data = Rx.Observable.fromEvent(grblPort, 'data')
+      .map(function(data){
+        return {action: 'data', data};
+      });
+    let error = Rx.Observable.fromEvent(grblPort, 'error')
+      .map(function(error){
+        return {action: 'data', error};
+      });
+    //collect feedback and status on a timer
+    let status = Rx.Observable.timer(0, 1000)
+      .map(function(){
+        return {action: 'status'};
+      });
+    this.subscription =  Rx.Observable.merge(
+        open
+        ,close
+        ,data
+        ,error
+        ,status
+      )
+        //by this point, we have a stream of actions, so run an action dispatch map
+        .tap(function(command) {
+          vorpal.log(messages.trace(JSON.stringify(command)));
+        })
+        .subscribe();
+  }
 
-  //bridge out events coming in from the serial connection to GRBL
-  let open = Rx.Observable.fromEvent(grbl, 'open')
-    .map(function(){
-      return {action: 'open'};
-    });
-  let close = Rx.Observable.fromEvent(grbl, 'close')
-    .map(function(){
-      return {action: 'close'};
-    });
-  let data = Rx.Observable.fromEvent(grbl, 'data')
-    .map(function(data){
-      return {action: 'data', data};
-    });
-  let error = Rx.Observable.fromEvent(grbl, 'error')
-    .map(function(error){
-      return {action: 'data', error};
-    });
-  //bridge to allow injection of immediate commands from the CLI
-  let immediate = Rx.Observable.create(function(observer){
-    vorpal.immediate = function(command, completion_promise) {
-      observer.onNext(command)
-    }
-  });
-  //collect feedback and status on a timer
-  let status = Rx.Observable.timer(0, 1000)
-    .map(function(){
-      return {action: 'status'};
-    });
-  //listen to everything streaming back and forth from GRBL,
-  //this is the unified event stream
-  let from_grbl = Rx.Observable.merge(
-    open
-    ,close
-    ,data
-    ,error
-    ,immediate
-    ,status
-  )
-    //by this point, we have a stream of actions, so run an action dispatch map
-    .tap(function(command) {
-      vorpal.log(traceMessage(JSON.stringify(command)));
-    })
-    .do(function(command){
-      switch(command.action) {
-        case 'disconnect':
-          grbl.close();
-          break;
-        case 'close':
-          vorpal.subscription.dispose();
-          break;
-        case 'status':
-          grbl.write('?\n');
-          break;
-      }
-    });
-  //and hook up a subscription to get reactive going
-  vorpal.subscription = from_grbl.subscribe();
+  /*
+  Disconnect the port and any observables.
+  */
+  close(){
+    this.grblPort.close();
+    this.subscription.dispose();
+  }
 }
+module.exports = GRBL;

@@ -6,7 +6,10 @@ the serial port with a line oriented style.
 
 "use strict";
 var Promise = require('bluebird');
-var grbl = require('./grbl');
+var GRBL = require('./grbl');
+var serialport = require("serialport");
+var Rx = require('rx');
+var messages = require('./messages');
 
 module.exports = function(vorpal, options) {
   vorpal
@@ -17,10 +20,24 @@ module.exports = function(vorpal, options) {
         .promisify(serialport.list)()
         .map( (port) => `${port.comName}`.split('/')[2] )
     })
+    .validate(function(args){
+      if(vorpal.GRBL) {
+        return messages.error('You are already connected, disconnect first.');
+      } else {
+        return true;
+      }
+    })
     .action(function(args){
       args.action = 'connect';
       args.options.baudrate = Number(args.options.baudrate || 115200);
-      grbl(vorpal, args);
+      let grblPort = new serialport.SerialPort(
+          `/dev/${args.port}`
+          ,{
+            parser: serialport.parsers.readline("\n")
+            ,baudrate: args.options.baudrate
+          }
+      );
+      vorpal.GRBL = new GRBL(vorpal, grblPort);
       return Promise.resolve();
     })
 }
