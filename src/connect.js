@@ -3,8 +3,11 @@ Connection command, this sets up the actual serial line connection to your
 GRBL device and hooks up a reactive event flow for messages to and from
 the serial port with a line oriented style.
 */
-Promise = require('bluebird');
-serialport = require('serialport');
+
+"use strict";
+var Promise = require('bluebird');
+var SerialPort = require("serialport").SerialPort
+var grbl = require('./grbl');
 
 module.exports = function(vorpal, options) {
   vorpal
@@ -16,7 +19,13 @@ module.exports = function(vorpal, options) {
         .map( (port) => `${port.comName}`.split('/')[2] )
     })
     .action(function(args){
-      this.log(args);
+      args.options.baudrate = Number(args.options.baudrate || 115200);
+      grbl(vorpal, new SerialPort(`/dev/${args.port}`, {
+        parser: serialport.parsers.readline("\n")
+        ,baudrate: args.options.baudrate
+      }
+
+      ));
       return Promise.resolve();
     })
 }

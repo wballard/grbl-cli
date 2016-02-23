@@ -18,6 +18,7 @@
   "homepage": "https://github.com/wballard/grbl-cli#readme",
   "dependencies": {
     "bluebird": "^3.3.1",
+    "rx-node": "^1.0.2",
     "serialport": "^2.0.6",
     "vorpal": "^1.9.2"
   }

@@ -1,0 +1,14 @@
+/*
+Play the contents of a file through to your GRBL. This assumes you will be
+running with a laser type cutter. Laser cutters will not burn during rapid moves,
+so the GCODE is processed to enable/disable around each move.
+*/
+Promise = require('bluebird');
+
+module.exports = function(vorpal, options) {
+  vorpal
+    .command('laser <filename>', 'Run the context of a file with a laser cutter')
+    .action(function(args){
+      return Promise.resolve();
+    })
+}

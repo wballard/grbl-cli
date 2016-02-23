@@ -8,5 +8,13 @@ vorpal = require('vorpal')();
 
 vorpal
   .use(require('../src/connect.js'))
+  .use(require('../src/disconnect.js'))
+  .use(require('../src/pause.js'))
+  .use(require('../src/resume.js'))
+  .use(require('../src/spindle.js'))
+  .use(require('../src/laser.js'))
+  .use(require('../src/gcode.js'))
+  .use(require('../src/home.js'))
+  .use(require('../src/reset.js'))
   .delimiter('grbl>')
   .show();
