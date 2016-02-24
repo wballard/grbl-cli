@@ -5,7 +5,7 @@ the serial port with a line oriented style.
 ###
 
 Promise = require('bluebird')
-GRBL = require('./grbl')
+GRBL = require('./grbl.coffee')
 serialport = require("serialport")
 Rx = require('rx')
 messages = require('./messages')
