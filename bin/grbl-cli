@@ -1,20 +1,21 @@
-#!/usr/bin/env node
-/*
+#!/usr/bin/env coffee
+###
 Command line main interface, starts up vorpal and hands off
 to each of the various commands loaded as extensions.
-*/
+###
 
-vorpal = require('vorpal')();
+vorpal = require('vorpal')()
+
 
 vorpal
-  .use(require('../src/connect.js'))
-  .use(require('../src/disconnect.js'))
+  .use(require('../src/connect.coffee'))
+  .use(require('../src/disconnect.coffee'))
   .use(require('../src/pause.js'))
   .use(require('../src/resume.js'))
-  .use(require('../src/play.js'))
+  .use(require('../src/play.coffee'))
   .use(require('../src/laser.js'))
   .use(require('../src/gcode.js'))
   .use(require('../src/home.js'))
   .use(require('../src/reset.js'))
   .delimiter('grbl>')
-  .show();
+  .show()

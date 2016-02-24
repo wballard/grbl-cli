@@ -80,8 +80,10 @@ class GRBL {
       .map(function(){
         return {action: 'status'};
       });
-    this.subscription =  Rx.Observable.merge(
-        open
+    this.gcode = new Rx.Subject();
+    this.commands =  Rx.Observable.merge(
+        this.gcode
+        ,open
         ,close
         ,data
         ,error
@@ -91,7 +93,8 @@ class GRBL {
         .tap(function(command) {
           vorpal.log(messages.trace(JSON.stringify(command)));
         })
-        .subscribe();
+        .publish()
+        .connect();
   }
 
   /*
@@ -99,7 +102,7 @@ class GRBL {
   */
   close(){
     this.grblPort.close();
-    this.subscription.dispose();
+    this.commands.dispose();
   }
 }
 module.exports = GRBL;
