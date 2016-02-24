@@ -3,7 +3,7 @@ Play the contents of a file through to your GRBL.
 ###
 Promise = require('bluebird')
 fsAutocomplete = require('vorpal-autocomplete-fs')
-gcode = Promise.promisify(require('gcode').parseFile)
+gcode = Promise.promisify(require('gcode-parser').parseFile)
 Rx = require('rx')
 
 module.exports = (vorpal, options) ->
@@ -14,4 +14,5 @@ module.exports = (vorpal, options) ->
     .action (args) ->
       gcode args.filename
         .then (commands) ->
+          vorpal.log commands
           vorpal.gcode.onNext(Rx.Observable.from(commands))
