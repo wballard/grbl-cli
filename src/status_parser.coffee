@@ -20,7 +20,7 @@ module.exports = (string) ->
   if string and string?.trim().length
     parser.parse string.trim()
   else
-    undefined
+    {}
 
 dryrun.forEach (s) ->
   console.error JSON.stringify module.exports s

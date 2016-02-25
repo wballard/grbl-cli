@@ -55,7 +55,7 @@ class GRBL
   ###
   Construction is about attaching a communication port.
   ###
-  constructor: (vorpal, @grblPort) ->
+  constructor: (vorpal, @grblPort, @machine={}) ->
     #bridge out events coming in from the serial connection to grblPort
     open = Rx.Observable.fromEvent(@grblPort, 'open')
       .map -> {action: 'open'}
@@ -77,13 +77,11 @@ class GRBL
       error,
       status
     )
-    .tap (command) -> vorpal.log(messages.trace(JSON.stringify(command)))
     .do (command) =>
-     #status commands ask GRBL for a report
+      #status commands ask GRBL for a report
       if command.action is 'status'
         @grblPort.write '?'
     .map (command) ->
-      console.error 'what'
       #turn status reports into structured data
       try
         if command.action is 'data'
@@ -92,7 +90,24 @@ class GRBL
           command
       catch e
         vorpal.log(messages.error(e))
-    .tap (command) -> vorpal.log(messages.trace(JSON.stringify(command)))
+    .tap (command) -> console.error(messages.trace(JSON.stringify(command)))
+    .do (command) =>
+      if command?.action is 'hello'
+        @grblPort.write '$\n'
+    .do (command) =>
+      try
+        #reduce down to a new state, merging in updates, this is effectively
+        #a one way, immutable react style flow
+        @machine = Object.assign(@machine, command)
+        #and render out the user interface state here, this is where it differs
+        #from react in that, well, there is no react just a command prompt
+        m = @machine?.state?.machine_position
+        if m
+          vorpal.ui.delimiter """
+          G53 (#{m?.x},#{m?.y},#{m?.z}) grbl>
+          """
+      catch e
+        vorpal.log(messages.error(e))
     .subscribe()
 
   ###
