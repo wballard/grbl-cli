@@ -1,5 +1,6 @@
 start =
-  report
+  hello
+  / report
 
 
 /*
@@ -7,6 +8,12 @@ Atoms are here.
 */
 number =
   [\+\-]?[0-9]+([\.][0-9]+)? {return parseFloat(text());}
+
+rest =
+  .* {return text();}
+
+version =
+  ([0-9\.a-z])+ {return text();}
 
 idle =
   "Idle" {return {idle: true}}
@@ -85,6 +92,19 @@ named_value =
 /*
 Status message statements are here
 */
+//not much to see here, just pop back a version number
+hello =
+  "Grbl"
+  " "
+  version:version
+  rest:rest
+  {
+    return {
+      action: 'hello',
+      version: version
+    }
+  }
+//this reports current state and position of the machine
 report =
  "<"
  state:state
@@ -93,7 +113,11 @@ report =
  {
    //flatten down into name:value rather than
    //as an array of named values
-   return values.reduce((prior, current) => {
+   state = values.reduce((prior, current) => {
      return Object.assign(prior, current);
    }, state);
+   return {
+     action: 'report',
+     state
+   }
  }

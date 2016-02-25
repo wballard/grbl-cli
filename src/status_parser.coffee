@@ -4,7 +4,10 @@ This returns a nice structured pellet of data we can use to display the current
 machine status and position in the UI.
 ###
 
-dryrun = "<Idle,MPos:0.000,0.000,0.000,WPos:0.000,0.000,0.000>\r"
+dryrun = [
+  "<Idle,MPos:0.000,0.000,0.000,WPos:0.000,0.000,0.000>\r"
+  "Grbl 0.9j ['$' for help]\r"
+]
 pegjs = require('pegjs')
 Promise = require('bluebird')
 fs = require('fs')
@@ -14,6 +17,10 @@ parser = pegjs.buildParser(
   )
 
 module.exports = (string) ->
-  parser.parse string.trim()
+  if string and string?.trim().length
+    parser.parse string.trim()
+  else
+    undefined
 
-console.error JSON.stringify module.exports dryrun
+dryrun.forEach (s) ->
+  console.error JSON.stringify module.exports s

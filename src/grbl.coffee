@@ -79,8 +79,20 @@ class GRBL
     )
     .tap (command) -> vorpal.log(messages.trace(JSON.stringify(command)))
     .do (command) =>
+     #status commands ask GRBL for a report
       if command.action is 'status'
         @grblPort.write '?'
+    .map (command) ->
+      console.error 'what'
+      #turn status reports into structured data
+      try
+        if command.action is 'data'
+          status_parser(command.data)
+        else
+          command
+      catch e
+        vorpal.log(messages.error(e))
+    .tap (command) -> vorpal.log(messages.trace(JSON.stringify(command)))
     .subscribe()
 
   ###
