@@ -1,6 +1,8 @@
 start =
   hello
+  / feedback
   / report
+  / status
 
 
 /*
@@ -35,6 +37,8 @@ check =
 
 door =
   "Door" {return {door: true}}
+
+
 
 /*
 Compounds are here
@@ -78,6 +82,15 @@ work_position =
   "WPos:" x:position
   {return {work_position: x}}
 
+ok =
+  "ok" {return {action: 'status', ok: true}}
+
+error =
+  "error: " message:rest {return {action: 'status', error: true, message}}
+
+alarm =
+  "ALARM: " message:rest {return {action: 'status', alarm: true, message}}
+
 named_value =
   control_pin
   / limit_pin
@@ -92,6 +105,7 @@ named_value =
 /*
 Status message statements are here
 */
+
 //not much to see here, just pop back a version number
 hello =
   "Grbl"
@@ -104,6 +118,7 @@ hello =
       version: version
     }
   }
+
 //this reports current state and position of the machine
 report =
  "<"
@@ -121,3 +136,21 @@ report =
      state
    }
  }
+
+//feeback report
+feedback =
+  "["
+  message:rest
+  "]"
+  {
+    return {
+      action: 'feedback',
+      message: version
+    }
+  }
+
+//status messages coming in while commands are running
+status =
+  ok
+  / error
+  / alarm

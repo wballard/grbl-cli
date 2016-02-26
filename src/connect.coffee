@@ -22,7 +22,7 @@ module.exports = (vorpal, options) ->
         .map( (port) -> "#{port.comName}".split('/')[2] )
     .validate (args) ->
       if(vorpal.GRBL)
-        return messages.error('You are already connected, disconnect first.')
+        return "You must #{vorpal.chalk.cyan('disconnect')} first"
       else
         return true
     .action (args) ->

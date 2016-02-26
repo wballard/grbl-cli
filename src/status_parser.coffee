@@ -12,9 +12,10 @@ pegjs = require('pegjs')
 Promise = require('bluebird')
 fs = require('fs')
 path = require('path')
+
 parser = pegjs.buildParser(
   fs.readFileSync(path.join(__dirname, 'status_parser.pegjs'), 'utf8')
-  )
+)
 
 module.exports = (string) ->
   if string and string?.trim().length

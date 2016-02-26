@@ -7,7 +7,7 @@ to each of the various commands loaded as extensions.
 vorpal = require('vorpal')()
 
 
-vorpal
+cli = vorpal
   .use(require('../src/connect.coffee'))
   .use(require('../src/disconnect.coffee'))
   .use(require('../src/pause.js'))
@@ -17,5 +17,9 @@ vorpal
   .use(require('../src/gcode.js'))
   .use(require('../src/home.js'))
   .use(require('../src/reset.js'))
+  .use(require('../src/set.js'))
+  .use(require('../src/restore.js'))
   .delimiter('grbl>')
   .show()
+cli.exec "connect cu.Phone-WirelessiAP"
+  .then cli.exec "play test/sample.gcode"

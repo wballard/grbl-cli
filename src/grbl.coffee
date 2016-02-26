@@ -55,66 +55,90 @@ class GRBL
   ###
   Construction is about attaching a communication port.
   ###
-  constructor: (vorpal, @grblPort, @machine={}) ->
-    #bridge out events coming in from the serial connection to grblPort
-    open = Rx.Observable.fromEvent(@grblPort, 'open')
-      .map -> {action: 'open'}
-    close = Rx.Observable.fromEvent(@grblPort, 'close')
-      .map -> {action: 'close'}
-    data = Rx.Observable.fromEvent(@grblPort, 'data')
-      .map (data) -> {action: 'data', data}
-    error = Rx.Observable.fromEvent(@grblPort, 'error')
-      .map (error) -> {action: 'data', error}
-    #collect feedback and status on a timer
+  constructor: (@vorpal, @grblPort, @machine={}) ->
+    #bridge out events coming in from an event source to an observable
+    eventAction = (object, name) ->
+      Rx.Observable.fromEvent(object, name)
+        .map -> {action: name}
+    #ask for status on a timer
     status = Rx.Observable.timer(0, 1000)
       .map -> {action: 'status'}
+    #this subject serves as the input -- send in gcode commands actions here
+    #`controlled` is used to build a FIFO queue
     @gcode = new Rx.Subject()
+    #and observe all the commands together
     @commands = Rx.Observable.merge(
-      @gcode,
-      open,
-      close,
-      data,
-      error,
+      @fifo = @gcode.mergeAll().controlled(),
+      eventAction(@grblPort, 'open'),
+      eventAction(@grblPort, 'close'),
+      eventAction(@grblPort, 'error'),
+      eventAction(@grblPort, 'data'),
       status
     )
-    .do (command) =>
-      #status commands ask GRBL for a report
-      if command.action is 'status'
-        @grblPort.write '?'
+    #Here is a chance to parse any data coming in from GRBL and turn it to
+    #a structured object instead of just a string
     .map (command) ->
-      #turn status reports into structured data
-      try
-        if command.action is 'data'
-          status_parser(command.data)
-        else
-          command
-      catch e
-        vorpal.log(messages.error(e))
-    .tap (command) -> console.error(messages.trace(JSON.stringify(command)))
+      if command.action is 'data'
+        status_parser(command.data)
+      else
+        command
+    #reduce down to a new state, merging in updates, this is effectively
+    #a one way, immutable react style flow
     .do (command) =>
-      if command?.action is 'hello'
-        @grblPort.write '$\n'
+      @machine = Object.assign(@machine, command)
+    #run any methods mapped through to actions, this does not have a chance
+    #to modify the command
+    .tap @trace
     .do (command) =>
       try
-        #reduce down to a new state, merging in updates, this is effectively
-        #a one way, immutable react style flow
-        @machine = Object.assign(@machine, command)
-        #and render out the user interface state here, this is where it differs
-        #from react in that, well, there is no react just a command prompt
-        m = @machine?.state?.machine_position
-        if m
-          vorpal.ui.delimiter """
-          G53 (#{m?.x},#{m?.y},#{m?.z}) grbl>
-          """
+        if @[command.action]
+          @[command.action](command)
       catch e
-        vorpal.log(messages.error(e))
-    .subscribe()
+        @error e
+    #render out the user interface state here, this is where it differs
+    #from react in that, well, there is no DOM just a command prompt
+    .do (command) =>
+      m = @machine?.state?.machine_position
+      if m
+        @vorpal.ui.delimiter """
+        G53 (#{m?.x},#{m?.y},#{m?.z}) grbl>
+        """
+    #gets the whole observable going, with message printing
+    .subscribe @trace, @error, @close
 
   ###
   Disconnect the port and any observables.
   ###
-  close : ->
+  close : =>
     @grblPort.close()
     @commands.dispose()
+
+  ###
+  Output
+  ###
+  trace: (thing) =>
+    @vorpal.log(messages.trace(JSON.stringify(thing)))
+
+  error: (thing) =>
+    @vorpal.log(messages.error(JSON.stringify(thing)))
+
+  ###
+  Action packed! For any given command that has action, do the mapped
+  thing. This avoids a big ocean of if statements, instead the presence of
+  the method is enough to know what to do.
+  ###
+
+  ###
+  Once GRBL has said hello, start up the GCODE dispatching.
+  ###
+  hello: (command) ->
+    @fifo.request(1)
+
+  ###
+  Ask GRBL for status, message coming back will be parsed and preserved
+  as state.
+  ###
+  status: (command) ->
+    @grblPort.write '?'
 
 module.exports = GRBL
