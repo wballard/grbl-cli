@@ -21,9 +21,11 @@ module.exports = (vorpal, options) ->
         .each (filename) ->
           gcode filename
             .then (commands) ->
-              vorpal.GRBL.enqueue Rx.Observable.from(commands).map (command, i) ->
-                Object.assign command, {
-                  file: filename
-                  line: i
-                  text: command.line
-                }
+              vorpal.GRBL.fifo.enqueue(
+                Rx.Observable.from(commands).map (command, i) ->
+                  Object.assign command, {
+                    file: filename
+                    line: i
+                    text: command.line
+                  }
+              )

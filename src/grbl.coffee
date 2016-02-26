@@ -43,9 +43,17 @@ All additional data is attached to the action.
 ###
 
 Rx = require('rx')
+Rx.config.longStackSupport = true
 Promise = require('bluebird')
 messages = require('./messages')
 status_parser = require('./status_parser.coffee')
+FIFO = require('./fifo.coffee')
+
+stringify = (thing) ->
+  if typeof thing is 'string'
+    thing
+  else
+    JSON.stringify thing
 
 ###
 Attach to vorpal on connection, this creates an overall event observable
@@ -55,39 +63,22 @@ class GRBL
   ###
   Construction is about attaching a communication port.
   ###
-  constructor: (@vorpal, @grblPort, @machine={}) ->
+  constructor: (@vorpal, @grblPort, @machine={trace: true}) ->
     #bridge out events coming in from an event source to an observable
     eventAction = (object, name) ->
       Rx.Observable.fromEvent(object, name)
         .map (data) -> {action: name, data}
     #immediate add of a command
     @immediate = new Rx.Subject()
+    #fifo for GCODE commands that need parsing
+    @fifo = new FIFO()
     #ask for status on a timer
     status = Rx.Observable.timer(0, 1000)
       .map -> {action: 'status'}
-    #this subject serves as the input -- send in gcode commands actions here
-    #`controlled` is used to build a FIFO queue that sends along one command
-    #at a time as flow control, and will flush out any pending observeable
-    #of commands on an error
-    @enqueued = new Rx.Subject()
-    @fifo = @enqueued
-      .mergeAll()
-      .controlled()
-    filteredFifo = @fifo
-      .do (line) =>
-        if line.start or line.end
-          @fifo.drain = false
-          @fifo.request 1
-      .do =>
-        if @fifo.drain
-          @fifo.request 1
-      .where (line) =>
-        line.text and not @fifo.drain
-
     #and observe all the commands together
     @commands = Rx.Observable.merge(
       @immediate,
-      filteredFifo,
+      @fifo.observable,
       eventAction(@grblPort, 'open'),
       eventAction(@grblPort, 'close'),
       eventAction(@grblPort, 'error'),
@@ -98,7 +89,7 @@ class GRBL
     #a structured object instead of just a string
     .map (command) =>
       if command.action is 'data'
-        @vorpal.log @vorpal.chalk.green.underline command.data
+        @trace @vorpal.chalk.green.underline command.data
         status_parser(command.data)
       else
         command
@@ -127,7 +118,9 @@ class GRBL
         G53 (#{m?.x},#{m?.y},#{m?.z}) grbl>
         """
     #gets the whole observable going, with message printing
-    .subscribe @trace, @error, @close
+    .subscribe @trace, (e) =>
+      @error e.toString()
+    , @close
 
   ###
   Disconnect the port and any observables.
@@ -137,25 +130,14 @@ class GRBL
     @commands.dispose()
 
   ###
-  Input an observable of commands for enqueued running. Each command is expected
-  to have a `.line` property which will actually be sent along to GRBL.
-  This is surrounded by start and end markers to allow enqueued observeables to
-  drain out on any parsing error by GRBL.
-  ###
-  enqueue: (commands) ->
-    @enqueued.onNext Rx.Observable.of {start: true}
-    @enqueued.onNext commands
-    @enqueued.onNext Rx.Observable.of {end: true}
-
-  ###
   Output
   ###
   trace: (thing) =>
     if @machine.trace
-      @vorpal.log messages.trace(JSON.stringify(thing))
+      @vorpal.log messages.trace(stringify(thing))
 
   error: (thing) =>
-    @vorpal.log messages.error(JSON.stringify(thing))
+    @vorpal.log messages.error(stringify(thing))
 
   ###
   Action packed! For any given command that has action, do the mapped
@@ -174,7 +156,7 @@ class GRBL
   Once GRBL has said hello, command dispatch from the FIFO can start.
   ###
   grbl_hello: (command) ->
-    @fifo.request 1
+    @fifo.next()
 
   ###
   GRBL reported an error, show the error and drain the FIFO
@@ -183,14 +165,13 @@ class GRBL
     @vorpal.log messages.error("#{@machine.file}:#{@machine.line}"),
       messages.error(@machine.text),
       messages.error("\n  #{command.message}")
-    @fifo.drain = true
-    @fifo.request 1
+    @fifo.drain()
 
   ###
   GRBL reports all is well, take the next command.
   ###
   grbl_ok: (command) ->
-    @fifo.request 1
+    @fifo.next()
 
   grbl_feedback: (command) ->
     @vorpal.log @vorpal.chalk.green command.message
