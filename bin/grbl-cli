@@ -21,5 +21,5 @@ cli = vorpal
   .use(require('../src/restore.js'))
   .delimiter('grbl>')
   .show()
-cli.exec "connect cu.Phone-WirelessiAP"
-  .then cli.exec "play test/sample.gcode"
+cli.exec "connect cu.usbmodem14341"
+  .then cli.exec("play test/sample.gcode")

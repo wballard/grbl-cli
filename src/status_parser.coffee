@@ -7,6 +7,7 @@ machine status and position in the UI.
 dryrun = [
   "<Idle,MPos:0.000,0.000,0.000,WPos:0.000,0.000,0.000>\r"
   "Grbl 0.9j ['$' for help]\r"
+  "[Pgm End]"
 ]
 pegjs = require('pegjs')
 Promise = require('bluebird')

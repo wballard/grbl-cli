@@ -14,6 +14,9 @@ number =
 rest =
   .* {return text();}
 
+message =
+  [^\]]* {return text();}
+
 version =
   ([0-9\.a-z])+ {return text();}
 
@@ -82,14 +85,15 @@ work_position =
   "WPos:" x:position
   {return {work_position: x}}
 
+
 ok =
-  "ok" {return {action: 'status', ok: true}}
+  "ok" {return {action: 'grbl_ok', message: ''}}
 
 error =
-  "error: " message:rest {return {action: 'status', error: true, message}}
+  "error: " message:rest {return {action: 'grbl_error', message}}
 
 alarm =
-  "ALARM: " message:rest {return {action: 'status', alarm: true, message}}
+  "ALARM: " message:rest {return {action: 'grbl_alarm', message}}
 
 named_value =
   control_pin
@@ -103,7 +107,7 @@ named_value =
 
 
 /*
-Status message statements are here
+Status message statements are here.
 */
 
 //not much to see here, just pop back a version number
@@ -137,15 +141,15 @@ report =
    }
  }
 
-//feeback report
+//feeback report, contains other feedback which is just to display
 feedback =
   "["
-  message:rest
+  message:message
   "]"
   {
     return {
       action: 'feedback',
-      message: version
+      message: message
     }
   }
 

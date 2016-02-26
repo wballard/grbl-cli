@@ -19,5 +19,9 @@ module.exports = (vorpal, options) ->
     .action (args) ->
       gcode args.filename
         .then (commands) ->
-          vorpal.log 'playing'
-          vorpal.GRBL.gcode.onNext(Rx.Observable.from(commands))
+          vorpal.GRBL.enqueue Rx.Observable.from(commands).map (command, i) ->
+            Object.assign command, {
+              file: args.filename
+              line: i
+              text: command.line
+            }
