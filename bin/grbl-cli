@@ -22,4 +22,5 @@ cli = vorpal
   .delimiter('grbl>')
   .show()
 cli.exec "connect cu.usbmodem14341"
-  .then cli.exec("play test/sample.gcode")
+  .then -> cli.exec("play test/sample_error.gcode")
+  .then -> cli.exec("play test/sample.gcode")

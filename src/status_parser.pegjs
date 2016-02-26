@@ -118,7 +118,7 @@ hello =
   rest:rest
   {
     return {
-      action: 'hello',
+      action: 'grbl_hello',
       version: version
     }
   }
@@ -136,7 +136,7 @@ report =
      return Object.assign(prior, current);
    }, state);
    return {
-     action: 'report',
+     action: 'rgrbl_eport',
      state
    }
  }
@@ -148,7 +148,7 @@ feedback =
   "]"
   {
     return {
-      action: 'feedback',
+      action: 'grbl_feedback',
       message: message
     }
   }

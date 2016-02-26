@@ -81,10 +81,8 @@ class GRBL
       .do =>
         if @fifo.drain
           @fifo.request 1
-      .takeWhile =>
-        not @fifo.drain
-      .where (line) ->
-        line.text
+      .where (line) =>
+        line.text and not @fifo.drain
 
     #and observe all the commands together
     @commands = Rx.Observable.merge(
@@ -118,7 +116,6 @@ class GRBL
     #send along anything with a `.text`
     .do (command) =>
       if command.text
-        @vorpal.log @vorpal.chalk.green command.text
         @grblPort.write command.text
         @grblPort.write "\n"
     #render out the user interface state here, this is where it differs
@@ -154,7 +151,8 @@ class GRBL
   Output
   ###
   trace: (thing) =>
-    @vorpal.log messages.trace(JSON.stringify(thing))
+    if @machine.trace
+      @vorpal.log messages.trace(JSON.stringify(thing))
 
   error: (thing) =>
     @vorpal.log messages.error(JSON.stringify(thing))
@@ -166,17 +164,17 @@ class GRBL
   ###
 
   ###
-  Once GRBL has said hello, command dispatch from the FIFO can start.
-  ###
-  hello: (command) ->
-    @fifo.request 1
-
-  ###
   Ask GRBL for status, message coming back will be parsed and preserved
   as state.
   ###
   status: (command) ->
     @grblPort.write '?'
+
+  ###
+  Once GRBL has said hello, command dispatch from the FIFO can start.
+  ###
+  grbl_hello: (command) ->
+    @fifo.request 1
 
   ###
   GRBL reported an error, show the error and drain the FIFO
@@ -193,6 +191,9 @@ class GRBL
   ###
   grbl_ok: (command) ->
     @fifo.request 1
+
+  grbl_feedback: (command) ->
+    @vorpal.log @vorpal.chalk.green command.message
 
 
 module.exports = GRBL
