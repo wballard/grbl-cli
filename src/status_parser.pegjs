@@ -21,25 +21,25 @@ version =
   ([0-9\.a-z])+ {return text();}
 
 idle =
-  "Idle" {return {idle: true}}
+  "Idle" {return {status: 'idle'}}
 
 run =
-  "Run" {return {run: true}}
+  "Run" {return {status: 'run'}}
 
 hold =
-  "Hold" {return {hold: true}}
+  "Hold" {return {status: 'hold'}}
 
 home =
-  "Home" {return {home: true}}
+  "Home" {return {status: 'home'}}
 
 alarm =
-  "Alarm" {return {alarm: true}}
+  "Alarm" {return {status: 'alarm'}}
 
 check =
-  "Check" {return {check: true}}
+  "Check" {return {status: 'check'}}
 
 door =
-  "Door" {return {door: true}}
+  "Door" {return {status: 'door'}}
 
 
 
@@ -136,7 +136,7 @@ report =
      return Object.assign(prior, current);
    }, state);
    return {
-     action: 'rgrbl_eport',
+     action: 'grbl_report',
      state
    }
  }

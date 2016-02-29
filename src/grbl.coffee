@@ -48,6 +48,7 @@ Promise = require('bluebird')
 messages = require('./messages')
 status_parser = require('./status_parser.coffee')
 FIFO = require('./fifo.coffee')
+prompts = require('./prompts.coffee')
 
 stringify = (thing) ->
   if typeof thing is 'string'
@@ -109,23 +110,21 @@ class GRBL
       if command.text
         @grblPort.write command.text
         @grblPort.write "\n"
-    #render out the user interface state here, this is where it differs
-    #from react in that, well, there is no DOM just a command prompt
-    .do (command) =>
-      m = @machine?.state?.machine_position
-      if m
-        @vorpal.ui.delimiter """
-        G53 (#{m?.x},#{m?.y},#{m?.z}) grbl>
-        """
     #gets the whole observable going, with message printing
     .subscribe @trace, (e) =>
       @error e.toString()
     , @close
+    #hook up an animated prompt
+    @prompt = setInterval =>
+      @vorpal.ui.delimiter @buildPrompt()
+    , 100
 
   ###
   Disconnect the port and any observables.
   ###
   close : =>
+    clearInterval @prompt
+    @vorpal.ui.delimiter "grbl>"
     @grblPort.close()
     @commands.dispose()
 
@@ -138,6 +137,20 @@ class GRBL
 
   error: (thing) =>
     @vorpal.log messages.error(stringify(thing))
+
+  ###
+  Render the current system state into a command line prompt, with some
+  fun animation and color.
+  ###
+  buildPrompt: ->
+    m = @machine?.state?.machine_position
+    w = @machine?.state?.work_position
+    ret = ""
+    if m
+      ret += "m:(#{m?.x},#{m?.y},#{m?.z}) w:(#{w?.x},#{w?.y},#{w?.z})\n"
+    if @machine?.state?.status and pfn = prompts[@machine?.state?.status]
+      ret += "#{pfn()} "
+    ret += "grbl>"
 
   ###
   Action packed! For any given command that has action, do the mapped
@@ -153,7 +166,7 @@ class GRBL
   as state.
   ###
   status: (command) ->
-    @grblPort.write '?'
+    @grblPort.write '?\n'
 
   ###
   Toggle trace status.
@@ -162,10 +175,17 @@ class GRBL
     @machine.trace = not @machine.trace
 
   ###
+  Serial port is open
+  ###
+  open: (command) ->
+
+  ###
   Once GRBL has said hello, command dispatch from the FIFO can start.
   ###
   grbl_hello: (command) ->
     @fifo.next()
+    @grblPort.write '$g\n'
+    @grblPort.write '$#\n'
 
   ###
   GRBL reported an error, show the error and drain the FIFO

@@ -23,6 +23,6 @@ cli = vorpal
   .use(require('../src/gcode.js'))
   .delimiter('grbl>')
   .show()
-cli.exec "connect cu.usbmodem1421"
+cli.exec "connect cu.usbmodem1411"
   .then -> cli.exec("play test/sample_error.gcode")
   .then -> cli.exec("play test/sample.gcode")
