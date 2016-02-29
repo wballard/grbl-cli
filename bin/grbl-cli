@@ -16,6 +16,7 @@ cli = vorpal
   .use(require('../src/home.coffee'))
   .use(require('../src/reset.coffee'))
   .use(require('../src/unlock.coffee'))
+  .use(require('../src/trace.coffee'))
   .use(require('../src/set.js'))
   .use(require('../src/restore.js'))
   .use(require('../src/laser.js'))

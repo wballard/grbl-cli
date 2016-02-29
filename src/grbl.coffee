@@ -63,7 +63,7 @@ class GRBL
   ###
   Construction is about attaching a communication port.
   ###
-  constructor: (@vorpal, @grblPort, @machine={trace: true}) ->
+  constructor: (@vorpal, @grblPort, @machine={trace: false}) ->
     #bridge out events coming in from an event source to an observable
     eventAction = (object, name) ->
       Rx.Observable.fromEvent(object, name)
@@ -154,6 +154,12 @@ class GRBL
   ###
   status: (command) ->
     @grblPort.write '?'
+
+  ###
+  Toggle trace status.
+  ###
+  tracing: (command) ->
+    @machine.trace = not @machine.trace
 
   ###
   Once GRBL has said hello, command dispatch from the FIFO can start.
