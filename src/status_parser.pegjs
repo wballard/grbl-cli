@@ -86,13 +86,13 @@ work_position =
   {return {work_position: x}}
 
 
-ok =
+ok_message =
   "ok" {return {action: 'grbl_ok', message: ''}}
 
-error =
+error_message =
   "error: " message:rest {return {action: 'grbl_error', message}}
 
-alarm =
+alarm_message =
   "ALARM: " message:rest {return {action: 'grbl_alarm', message}}
 
 named_value =
@@ -155,6 +155,6 @@ feedback =
 
 //status messages coming in while commands are running
 status =
-  ok
-  / error
-  / alarm
+  ok_message
+  / error_message
+  / alarm_message

@@ -145,6 +145,9 @@ class GRBL
   the method is enough to know what to do.
   ###
 
+  reset: (command) ->
+    @fifo.drain()
+
   ###
   Ask GRBL for status, message coming back will be parsed and preserved
   as state.
