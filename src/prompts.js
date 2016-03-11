@@ -14,7 +14,7 @@ module.exports = {
     chalk.green(dotsFrames[dotat = ++dotat % dotsFrames.length])
   , idle: () =>
     chalk.green("⣿")
-  ,hold: () =>
+  , hold: () =>
     chalk.yellow(errorFrames[dotat = ++dotat % errorFrames.length])
   , alarm: () =>
     chalk.red(errorFrames[dotat = ++dotat % errorFrames.length])

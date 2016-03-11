@@ -20,12 +20,12 @@ module.exports = function(vorpal) {
     })
     .validate(function() {
       if (vorpal.GRBL)
-        return `You must ${vorpal.chalk.cyan("disconnect")} first`
+        return `You must ${vorpal.chalk.cyan("disconnect")} first`;
       else
         return true;
     })
     .action(function(args) {
-      args.options.baudrate = Number(args.options.baudrate || 115200)
+      args.options.baudrate = Number(args.options.baudrate || 115200);
       let grblPort = new serialport.SerialPort(
         `/dev/${args.port}`,
         {
