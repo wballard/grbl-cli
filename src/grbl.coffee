@@ -47,7 +47,7 @@ require('./actionpacked.js')
 Rx.config.longStackSupport = true
 Promise = require('bluebird')
 messages = require('./messages')
-status_parser = require('./status_parser.coffee')
+status_parser = require('./status_parser.js')
 FIFO = require('./fifo.coffee')
 path = require('path')
 
