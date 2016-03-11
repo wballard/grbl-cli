@@ -43,12 +43,14 @@ All additional data is attached to the action.
 ###
 
 Rx = require('rx')
+require('./actionpacked.js')
 Rx.config.longStackSupport = true
 Promise = require('bluebird')
 messages = require('./messages')
 status_parser = require('./status_parser.coffee')
 FIFO = require('./fifo.coffee')
 prompts = require('./prompts.coffee')
+path = require('path')
 
 stringify = (thing) ->
   if typeof thing is 'string'
@@ -64,7 +66,7 @@ class GRBL
   ###
   Construction is about attaching a communication port.
   ###
-  constructor: (@vorpal, @grblPort, @machine={trace: false}) ->
+  constructor: (@vorpal, @grblPort, @machine={}) ->
     #bridge out events coming in from an event source to an observable
     eventAction = (object, name) ->
       Rx.Observable.fromEvent(object, name)
@@ -90,7 +92,6 @@ class GRBL
     #a structured object instead of just a string
     .map (command) =>
       if command.action is 'data'
-        @trace @vorpal.chalk.green.underline command.data
         status_parser(command.data)
       else
         command
@@ -98,20 +99,16 @@ class GRBL
     #a one way, immutable react style flow
     .do (command) =>
       @machine = Object.assign(@machine, command)
-    #run any methods mapped through to actions, this does not have a chance
-    #to modify the command
-    .do (command) =>
-      try
-        @[command.action]?(command)
-      catch error
-        @error error
+      command.grbl = @
+      command.vorpal = @vorpal
+    .actionPacked(path.join(__dirname, "responses"))
     #send along anything with a `.text`
     .do (command) =>
       if command.text
         @grblPort.write command.text
         @grblPort.write "\n"
     #gets the whole observable going, with message printing
-    .subscribe @trace, (e) =>
+    .subscribe @j, (e) =>
       @error e.toString()
     , @close
     #hook up an animated prompt
@@ -127,16 +124,6 @@ class GRBL
     @vorpal.ui.delimiter "grbl>"
     @grblPort.close()
     @commands.dispose()
-
-  ###
-  Output
-  ###
-  trace: (thing) =>
-    if @machine.trace
-      @vorpal.log messages.trace(stringify(thing))
-
-  error: (thing) =>
-    @vorpal.log messages.error(stringify(thing))
 
   ###
   Render the current system state into a command line prompt, with some
@@ -157,35 +144,12 @@ class GRBL
   thing. This avoids a big ocean of if statements, instead the presence of
   the method is enough to know what to do.
   ###
-
-  reset: (command) ->
-    @fifo.drain()
-
-  ###
-  Ask GRBL for status, message coming back will be parsed and preserved
-  as state.
-  ###
-  status: (command) ->
-    @grblPort.write '?\n'
-
-  ###
-  Toggle trace status.
-  ###
-  tracing: (command) ->
-    @machine.trace = not @machine.trace
-
-  ###
-  Serial port is open
-  ###
-  open: (command) ->
-
-  ###
-  Once GRBL has said hello, command dispatch from the FIFO can start.
-  ###
-  grbl_hello: (command) ->
+  
+  next: ->
     @fifo.next()
-    @grblPort.write '$g\n'
-    @grblPort.write '$#\n'
+
+  reset: ->
+    @fifo.drain()
 
   ###
   GRBL reported an error, show the error and drain the FIFO
@@ -195,12 +159,6 @@ class GRBL
       messages.error(@machine.text),
       messages.error("\n  #{command.message}")
     @fifo.drain()
-
-  ###
-  GRBL reports all is well, take the next command.
-  ###
-  grbl_ok: (command) ->
-    @fifo.next()
 
   grbl_feedback: (command) ->
     @vorpal.log @vorpal.chalk.green command.message

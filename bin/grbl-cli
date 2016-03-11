@@ -5,26 +5,25 @@ Command line main interface, starts up vorpal and hands off
 to each of the various commands loaded as extensions.
 */
 
-require('coffee-script/register');
-let vorpal = require('vorpal')();
+require("coffee-script/register");
+let vorpal = require("vorpal")();
 
 
 let cli = vorpal
-  .use(require('../src/commands/connect.js'))
-  .use(require('../src/disconnect.coffee'))
-  .use(require('../src/pause.coffee'))
-  .use(require('../src/resume.coffee'))
-  .use(require('../src/play.coffee'))
-  .use(require('../src/home.coffee'))
-  .use(require('../src/reset.coffee'))
-  .use(require('../src/unlock.coffee'))
-  .use(require('../src/trace.coffee'))
-  .use(require('../src/set.js'))
-  .use(require('../src/restore.js'))
-  .use(require('../src/laser.js'))
-  .use(require('../src/gcode.js'))
-  .delimiter('grbl>')
+  .use(require("../src/commands/connect.js"))
+  .use(require("../src/disconnect.coffee"))
+  .use(require("../src/pause.coffee"))
+  .use(require("../src/resume.coffee"))
+  .use(require("../src/play.coffee"))
+  .use(require("../src/home.coffee"))
+  .use(require("../src/reset.coffee"))
+  .use(require("../src/unlock.coffee"))
+  .use(require("../src/set.js"))
+  .use(require("../src/restore.js"))
+  .use(require("../src/laser.js"))
+  .use(require("../src/gcode.js"))
+  .delimiter("grbl>")
   .show();
 cli.exec("connect cu.usbmodem14321")
-  .then( () => cli.exec("play test/sample_error.gcode"))
   .then( () => cli.exec("play test/sample.gcode"))
+  .then( () => cli.exec("play test/sample_error.gcode"));
