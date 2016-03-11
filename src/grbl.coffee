@@ -69,7 +69,7 @@ class GRBL
     #fifo for GCODE commands that need parsing
     @fifo = new FIFO()
     #ask for status on a timer
-    status = Rx.Observable.timer(0, 1000)
+    status = Rx.Observable.timer(0, 500)
       .map -> {action: 'status'}
     #and observe all the commands together
     @commands = Rx.Observable.merge(
