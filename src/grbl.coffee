@@ -49,14 +49,7 @@ Promise = require('bluebird')
 messages = require('./messages')
 status_parser = require('./status_parser.coffee')
 FIFO = require('./fifo.coffee')
-prompts = require('./prompts.coffee')
 path = require('path')
-
-stringify = (thing) ->
-  if typeof thing is 'string'
-    thing
-  else
-    JSON.stringify thing
 
 ###
 Attach to vorpal on connection, this creates an overall event observable
@@ -64,9 +57,9 @@ combining serial port data events and user supplied commands.
 ###
 class GRBL
   ###
-  Construction is about attaching a communication port.
+  Construction is about attaching a communication serial port.
   ###
-  constructor: (@vorpal, @grblPort, @machine={}) ->
+  constructor: (vorpal, @grblPort, @machine={}) ->
     #bridge out events coming in from an event source to an observable
     eventAction = (object, name) ->
       Rx.Observable.fromEvent(object, name)
@@ -100,7 +93,7 @@ class GRBL
     .do (command) =>
       @machine = Object.assign(@machine, command)
       command.grbl = @
-      command.vorpal = @vorpal
+      command.vorpal = vorpal
     .actionPacked(path.join(__dirname, "responses"))
     #send along anything with a `.text`
     .do (command) =>
@@ -111,57 +104,18 @@ class GRBL
     .subscribe @j, (e) =>
       @error e.toString()
     , @close
-    #hook up an animated prompt
-    @prompt = setInterval =>
-      @vorpal.ui.delimiter @buildPrompt()
-    , 100
 
   ###
-  Disconnect the port and any observables.
+  Disconnect the serial and any observables.
   ###
   close : =>
-    clearInterval @prompt
-    @vorpal.ui.delimiter "grbl>"
     @grblPort.close()
     @commands.dispose()
-
-  ###
-  Render the current system state into a command line prompt, with some
-  fun animation and color.
-  ###
-  buildPrompt: ->
-    m = @machine?.state?.machine_position
-    w = @machine?.state?.work_position
-    ret = ""
-    if m
-      ret += "m:(#{m?.x},#{m?.y},#{m?.z}) w:(#{w?.x},#{w?.y},#{w?.z})\n"
-    if @machine?.state?.status and pfn = prompts[@machine?.state?.status]
-      ret += "#{pfn()} "
-    ret += "grbl>"
-
-  ###
-  Action packed! For any given command that has action, do the mapped
-  thing. This avoids a big ocean of if statements, instead the presence of
-  the method is enough to know what to do.
-  ###
   
   next: ->
     @fifo.next()
 
   reset: ->
     @fifo.drain()
-
-  ###
-  GRBL reported an error, show the error and drain the FIFO
-  ###
-  grbl_error: (command) ->
-    @vorpal.log messages.error("#{@machine.file}:#{@machine.line}"),
-      messages.error(@machine.text),
-      messages.error("\n  #{command.message}")
-    @fifo.drain()
-
-  grbl_feedback: (command) ->
-    @vorpal.log @vorpal.chalk.green command.message
-
 
 module.exports = GRBL
