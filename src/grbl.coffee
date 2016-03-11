@@ -95,14 +95,9 @@ class GRBL
       command.grbl = @
       command.vorpal = vorpal
     .actionPacked(path.join(__dirname, "responses"))
-    #send along anything with a `.text`
-    .do (command) =>
-      if command.text
-        @grblPort.write command.text
-        @grblPort.write "\n"
     #gets the whole observable going, with message printing
     .subscribe @j, (e) =>
-      @error e.toString()
+      vorpal.log e.toString()
     , @close
 
   ###
@@ -117,5 +112,8 @@ class GRBL
 
   reset: ->
     @fifo.drain()
+    
+  enqueue: (thing) ->
+    @fifo.enqueue thing
 
 module.exports = GRBL

@@ -12,9 +12,9 @@ let vorpal = require("vorpal")();
 let cli = vorpal
   .use(require("../src/commands/connect.js"))
   .use(require("../src/commands/disconnect.js"))
+  .use(require("../src/commands/play.js"))
   .use(require("../src/pause.coffee"))
   .use(require("../src/resume.coffee"))
-  .use(require("../src/play.coffee"))
   .use(require("../src/home.coffee"))
   .use(require("../src/reset.coffee"))
   .use(require("../src/unlock.coffee"))
@@ -26,6 +26,5 @@ let cli = vorpal
   .show();
 cli.exec("connect cu.usbmodem14321")
   .then( () => cli.exec("play test/sample.gcode"))
-  .then( () => cli.exec("status"))
   .then( () => cli.exec("play test/sample_error.gcode"));
   //.then( () => cli.exec("disconnect"));
