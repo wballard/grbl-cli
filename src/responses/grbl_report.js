@@ -15,9 +15,11 @@ module.exports = function(command) {
     if(pfn)
       ret += `${pfn()} `;
     if(m)
-      ret += `m:(${m.x},${m.y},${m.z}) w:(${w.x},${w.y},${w.z})\n`;
-    ret += "grbl>";
+      ret += `m:(${m.x},${m.y},${m.z}) w:(${w.x},${w.y},${w.z}) grbl>`;
+    else
+      ret += "grbl>";
     command.vorpal.ui.delimiter(ret);
+    Object.assign(command.grbl.machine.state, command.state);
     resolve(command);
   });
 };

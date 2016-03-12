@@ -46,7 +46,7 @@ Rx.Observable.prototype.actionPacked = function(directoryName) {
   let source = this;
   return Rx.Observable.create(function(observer) {
     return source.subscribe(function(data) {
-      if (actions[data.action]) {
+      if (data && actions[data.action]) {
         actions[data.action](data)
           .then(function(ok) {
             observer.onNext(ok);

@@ -7,11 +7,15 @@ let messages = require("../messages.js");
 
 module.exports = function(command) {
   return new Promise(function(resolve) {
-    command.vorpal.log(
-      messages.error(`${command.grbl.machine.file}:${command.grbl.machine.line}`),
-      messages.error(command.grbl.machine.text),
-      messages.error("\n  #{command.message}")
-    );
+    let last = command.grbl.machine.last;
+    if (last) {
+      command.vorpal.log(
+        messages.error(`${last.file}:${last.line}`),
+        messages.error(last.text),
+        messages.error(`\n  ${command.message}`),
+        "\n"
+      );
+    }
     command.grbl.reset();
     resolve(command);
   });

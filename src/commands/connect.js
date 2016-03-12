@@ -6,7 +6,7 @@ the serial port with a line oriented style.
 */
 
 let Promise = require("bluebird")
-  , GRBL = require("../grbl.coffee")
+  , GRBL = require("../grbl.js")
   , serialport = require("serialport");
 
 module.exports = function(vorpal) {

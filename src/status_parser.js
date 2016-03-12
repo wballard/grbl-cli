@@ -21,6 +21,9 @@ module.exports = function(string) {
     else
       return {};
   } catch (e) {
-    throw e;
+    return {
+      action: "warn",
+      message: string
+    };
   }
 };

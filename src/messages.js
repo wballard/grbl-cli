@@ -6,6 +6,7 @@ var chalk = require("chalk");
 
 module.exports = {
   error: chalk.bold.red
+  ,warn: chalk.bold.yellow
   ,ok: chalk.green
   ,trace: chalk.blue
 };

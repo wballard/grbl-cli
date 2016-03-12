@@ -1,6 +1,10 @@
 start =
   hello
-  / feedback
+  / gcode_state_message
+  / gcode_coordinate_message
+  / tool_length_offset_message
+  / probe_message
+  / text_message
   / report
   / status
 
@@ -45,19 +49,25 @@ door =
   "Door" {return {status: 'door'}}
   
 reset = 
-  "[Reset to continue]" {return 'Reset to continue'}
+  "[Reset to continue]" {return 'reset to continue'}
 
 unlock = 
-  "['$H'|'$X' to unlock]" {return "'$H'|'$X' to unlock"}
+  "['$H'|'$X' to unlock]" {return "home or unlock"}
 
 unlocked = 
-  "[Caution: Unlocked]" {return "Caution: Unlocked"}
+  "[Caution: Unlocked]" {return ""}
   
 enabled = 
-  "[Enabled]" {return "Enabled"}
+  "[Enabled]" {return "enabled"}
   
 disabled = 
-  "[Disabled]" {return "Disabled"}
+  "[Disabled]" {return "disabled"}
+  
+end = 
+  "[Pgm End]" {return "program end"}
+  
+restore = 
+  "[Restoring defaults]" {return ""}
 
 /*
 Compounds are here.
@@ -149,50 +159,7 @@ error_message =
 alarm_message =
   "ALARM: " message:rest {return {action: 'grbl_alarm', message}}
   
-gcode_coordinate_message = 
-  "[" register:g_word ":" p:position "]"
-  {
-    let ret = {};
-    ret[register] = p;
-    return ret;
-  }
-  
-tool_length_offset_message = 
-  "[" "TLO" ":" offset:number "]"
-  {
-    return {
-      TLO: offset
-    }
-  }
-  
-probe_message = 
-  "[" "PRB" ":" p:position ":" success:boolean "]"
-  {
-    return {
-      PRB: p
-    }
-  }
-  
-gcode_state_message = 
-  "["
-  word:any_word
-  words:(" " word:any_word {return word})*
-  "]"
-  {
-    let ret = {};
-    ret[word] = true;
-    words.forEach((word) => {
-      ret[word] = true;
-    });
-    return ret;
-  }
-  
-text_message = 
-  reset 
-  / unlock 
-  / unlocked 
-  / enabled 
-  / disabled
+
 
 named_value =
   control_pin
@@ -241,20 +208,74 @@ report =
    }
  }
 
-/*
-Feedback report messages surrounded in []. This can be:
-* text just for display
-* work position register offsets
-* tool length offsets
-*/
-feedback =
-  message:gcode_coordinate_message
-  / message:tool_length_offset_message
-  / message:probe_message
-  / message:gcode_state_message
-  / message:text_message
+//Current state of the GCODE parser, this lets you know the work
+//coordinates as well as the coordinate plane and units
+gcode_state_message = 
+  "["
+  word:any_word
+  words:(" " word:any_word {return word})*
+  "]"
   {
-    return Object.assign({action: 'grbl_feeback'}, message);
+    let flags = {};
+    flags[word] = true;
+    words.forEach((word) => {
+      flags[word] = true;
+    });
+    return {
+      action: 'grbl_feedback',
+      state: {
+        flags
+      }
+    }
+  }
+ 
+//coordinates for machine offsets
+gcode_coordinate_message = 
+  "[" register:g_word ":" p:position "]"
+  {
+    let ret = {action: 'grbl_feedback', state: {}};
+    ret.state[register] = p;
+    return ret;
+  }
+  
+//amount of tool offset  
+tool_length_offset_message = 
+  "[" "TLO" ":" offset:number "]"
+  {
+    return {
+      action: 'grbl_feedback',
+      state: { 
+        TLO: offset
+      }
+    }
+  }
+  
+probe_message = 
+  "[" "PRB" ":" offset:position ":" success:boolean "]"
+  {
+    return {
+      action: 'grbl_feedback',
+      state: { 
+        PRB: offset
+      }
+    }
+  }
+  
+text_message = 
+  message:(
+    reset 
+  / unlock 
+  / unlocked 
+  / enabled 
+  / disabled
+  / end
+  / restore
+  )
+  {
+    return {
+      action: 'grbl_feedback',
+      message: message
+    }
   }
 
 //status messages coming in while commands are running

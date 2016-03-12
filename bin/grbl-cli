@@ -26,7 +26,6 @@ let cli = vorpal
   .delimiter("grbl>")
   .show();
 cli.exec("connect cu.usbmodem14321")
-  //.then( () => cli.exec("play test/sample.gcode"))
-  //.then( () => cli.exec("play test/sample_error.gcode"));
+  .then( () => cli.exec("play test/sample.gcode"))
   //.then( () => cli.exec("disconnect"));
   .then( () => cli.exec("status"));
