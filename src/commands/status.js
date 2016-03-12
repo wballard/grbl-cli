@@ -1,4 +1,4 @@
- "use strict";
+"use strict";
 
 /*
 Everything we know about the machine, defaults printing out as JSON.

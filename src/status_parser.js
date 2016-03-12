@@ -7,16 +7,20 @@ machine status and position in the UI.
 */
 
 const pegjs = require("pegjs")
-, fs = require("fs")
-, path = require("path");
+  , fs = require("fs")
+  , path = require("path");
 
 const parser = pegjs.buildParser(
   fs.readFileSync(path.join(__dirname, "status_parser.pegjs"), "utf8")
 );
 
-module.exports = function(string){
-  if (string && string.trim().length)
-    return parser.parse(string.trim());
-  else
-    return {};
+module.exports = function(string) {
+  try {
+    if (string && string.trim().length)
+      return parser.parse(string.trim());
+    else
+      return {};
+  } catch (e) {
+    throw e;
+  }
 };
