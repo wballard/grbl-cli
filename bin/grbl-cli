@@ -19,12 +19,14 @@ let cli = vorpal
   .use(require("../src/commands/unlock.js"))
   .use(require("../src/commands/home.js"))
   .use(require("../src/commands/restore.js"))
+  .use(require("../src/commands/status.js"))
   .use(require("../src/set.js"))
   .use(require("../src/laser.js"))
   .use(require("../src/gcode.js"))
   .delimiter("grbl>")
   .show();
 cli.exec("connect cu.usbmodem14321")
-  .then( () => cli.exec("play test/sample.gcode"))
-  .then( () => cli.exec("play test/sample_error.gcode"));
+  //.then( () => cli.exec("play test/sample.gcode"))
+  //.then( () => cli.exec("play test/sample_error.gcode"));
   //.then( () => cli.exec("disconnect"));
+  .then( () => cli.exec("status"));
