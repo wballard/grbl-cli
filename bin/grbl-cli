@@ -24,4 +24,4 @@ cli.exec("connect cu.usbmodem14321")
   //.then(() => cli.exec("play test/sample.gcode"))
   .then(() => cli.exec("set 1 25"))
   //.then( () => cli.exec("disconnect"));
-  .then(() => cli.exec("status"));
+  .then(() => cli.exec("direct"));

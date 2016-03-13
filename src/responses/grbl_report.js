@@ -18,6 +18,8 @@ module.exports = function(command) {
       ret += `m:(${m.x},${m.y},${m.z}) w:(${w.x},${w.y},${w.z}) grbl>`;
     else
       ret += "grbl>";
+    if(command.grbl.direct)
+      ret += " direct>";
     command.vorpal.ui.delimiter(ret);
     Object.assign(command.grbl.machine.state, command.state);
     resolve(command);

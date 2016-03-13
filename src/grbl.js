@@ -61,7 +61,7 @@ module.exports = class GRBL {
   constructor(vorpal, grblPort) {
     let grbl = this;
     this.grblPort = grblPort;
-    let machine = this.machine = {
+    this.machine = {
       state: {}
     };
     //bridge out events coming in from an event source to an observable
@@ -74,8 +74,8 @@ module.exports = class GRBL {
     };
     //fifo for GCODE commands that need parsing
     this.fifo = new FIFO();
-    //ask for status on a timer
-    let status = Rx.Observable.timer(0, 500)
+    //ask for status on a timer, 5Hz
+    let status = Rx.Observable.timer(0, 200)
       .map(() => {
         return { action: "status" };
       });
@@ -86,6 +86,8 @@ module.exports = class GRBL {
       , eventAction(grblPort, "close")
       , eventAction(grblPort, "error")
       , eventAction(grblPort, "data")
+      , eventAction(vorpal, "mode_enter")
+      , eventAction(vorpal, "mode_exit")
       , status
     )
       //Here is a chance to parse any data coming in from GRBL and turn it to
