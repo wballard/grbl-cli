@@ -44,12 +44,10 @@ All additional data is attached to the action.
 */
 
 const Rx = require("rx")
-  , Promise = require("bluebird")
-  , messages = require("./messages")
   , status_parser = require("./status_parser.js")
   , FIFO = require("./fifo.js")
   , path = require("path")
-  , _ = require("lodash");
+  , controller = require("./controller.js");
 
 Rx.config.longStackSupport = true;
 require("./actionpacked.js");
@@ -64,6 +62,7 @@ module.exports = class GRBL {
     this.machine = {
       state: {}
     };
+    this.jog = 0.1;
     //bridge out events coming in from an event source to an observable
     let eventAction = (object, name) => {
       return Rx.Observable
@@ -89,6 +88,7 @@ module.exports = class GRBL {
       , eventAction(vorpal, "mode_enter")
       , eventAction(vorpal, "mode_exit")
       , status
+      , controller(this)
     )
       //Here is a chance to parse any data coming in from GRBL and turn it to
       //a structured object instead of just a string
