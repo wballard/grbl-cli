@@ -47,7 +47,7 @@ const Rx = require("rx")
   , Promise = require("bluebird")
   , messages = require("./messages")
   , status_parser = require("./status_parser.js")
-  , FIFO = require("./fifo.coffee")
+  , FIFO = require("./fifo.js")
   , path = require("path")
   , _ = require("lodash");
 

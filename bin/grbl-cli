@@ -5,7 +5,6 @@ Command line main interface, starts up vorpal and hands off
 to each of the various commands loaded as extensions.
 */
 
-require("coffee-script/register");
 
 let vorpal = require("vorpal")(),
   fs = require("fs"),
@@ -21,7 +20,7 @@ let cli = vorpal
   .delimiter("grbl>")
   .show();
 cli.exec("connect cu.usbmodem14321")
-  //.then(() => cli.exec("play test/sample.gcode"))
+  .then(() => cli.exec("play test/sample.gcode"))
   .then(() => cli.exec("set 1 25"))
   //.then( () => cli.exec("disconnect"));
-  .then(() => cli.exec("direct"));
+  .then(() => cli.exec(""));
