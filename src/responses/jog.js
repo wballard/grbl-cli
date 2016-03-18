@@ -8,7 +8,7 @@ const Rx = require("rx");
 module.exports = function(command) {
   command.grbl.enqueue(Rx.Observable.of({
     action: "send"
-    , text: `G91G0X${command.dx}Y${command.dy}`
+    , text: `G91G0X${command.dx}Y${command.dy}Z${command.dz}`
   }));
   return Promise.resolve();
 };

@@ -19,10 +19,12 @@ module.exports = function(grbl) {
     /*
     Buttons just turn directly into actions.
     */
-    Rx.Observable.fromEvent(ps3Pad, "dpadUp:press").map(() => ({ action: "jog", dx: 0, dy: grbl.jog }))
-    , Rx.Observable.fromEvent(ps3Pad, "dpadDown:press").map(() => ({ action: "jog", dx: 0, dy: -1 * grbl.jog }))
-    , Rx.Observable.fromEvent(ps3Pad, "dpadLeft:press").map(() => ({ action: "jog", dx: -1 * grbl.jog, dy: 0 }))
-    , Rx.Observable.fromEvent(ps3Pad, "dpadRight:press").map(() => ({ action: "jog", dx: grbl.jog, dy: 0 }))
+    Rx.Observable.fromEvent(ps3Pad, "dpadUp:press").map(() => ({ action: "jog", dx: 0, dy: grbl.jog, dz: 0 }))
+    , Rx.Observable.fromEvent(ps3Pad, "dpadDown:press").map(() => ({ action: "jog", dx: 0, dy: -1 * grbl.jog, dz: 0 }))
+    , Rx.Observable.fromEvent(ps3Pad, "dpadLeft:press").map(() => ({ action: "jog", dx: -1 * grbl.jog, dy: 0, dz: 0 }))
+    , Rx.Observable.fromEvent(ps3Pad, "dpadRight:press").map(() => ({ action: "jog", dx: grbl.jog, dy: 0, dz: 0 }))
+    , Rx.Observable.fromEvent(ps3Pad, "r1:press").map(() => ({ action: "jog", dx: 0, dy: 0, dz: -1 * grbl.jog}))
+    , Rx.Observable.fromEvent(ps3Pad, "l1:press").map(() => ({ action: "jog", dx: 0, dy: 0, dz: grbl.jog}))
     /*
      For the left joystick, control the fast motion. The idea is to buffer up every 200ms, then
      average out the joystick position -- smoothing. From there, the major axis of motion determines
