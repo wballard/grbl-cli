@@ -61,6 +61,7 @@ module.exports = class GRBL {
     this.grblPort = grblPort;
     this.machine = {
       state: {}
+      ,settings: {}
     };
     this.jog = 0.1;
     //bridge out events coming in from an event source to an observable

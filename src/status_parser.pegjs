@@ -7,6 +7,7 @@ start =
   / text_message
   / report
   / status
+  / setting
 
 
 /*
@@ -283,3 +284,15 @@ status =
   ok_message
   / error_message
   / alarm_message
+
+
+setting = 
+  "$" setting:number "=" value:number " " description:rest
+  {
+    return {
+      action: 'grbl_setting',
+      setting,
+      value,
+      description
+    }
+  }
