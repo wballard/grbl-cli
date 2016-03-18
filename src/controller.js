@@ -18,6 +18,13 @@ module.exports = function() {
     , Rx.Observable.fromEvent(ps3Pad, "dpadLeft:press").map(() => ({ action: "jogleft" }))
     , Rx.Observable.fromEvent(ps3Pad, "dpadRight:press").map(() => ({ action: "jogright" }))
   )
+  /*
+   For the left joystick, control the fast motion. The idea is to buffer up every 200ms, then
+   average out the joystick position -- smoothing. From there, the major axis of motion determines
+   the feed rate -- as a percentage of the maximum feed speed in that axis, with the distance to 
+   cover being 200ms of travel. The minor axis motion is along for the ride, as GRBL will make a 
+   single motion anyhow.
+  */
     .finally(() => {
       ps3Pad._usb.close();
     });
