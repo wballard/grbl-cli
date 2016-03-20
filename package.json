@@ -25,7 +25,7 @@
     "pegjs": "^0.9.0",
     "rx-node": "^1.0.2",
     "serialport": "^2.0.6",
-    "vorpal": "^1.10.8",
+    "vorpal": "https://github.com/dthree/vorpal.git",
     "vorpal-autocomplete-fs": "0.0.3"
   }
 }
