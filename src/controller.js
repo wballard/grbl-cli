@@ -108,7 +108,10 @@ module.exports = function(grbl) {
         };
       }
     })
-
+    //and a home button
+    , Rx.Observable.fromEvent(ps3Pad, "psx:press").do(() => {
+      grbl.grblPort.write("$h\n");
+    })
   )
     .finally(() => {
       ps3Pad.disconnect();
