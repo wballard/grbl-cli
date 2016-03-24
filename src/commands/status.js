@@ -9,9 +9,7 @@ module.exports = function(vorpal) {
   vorpal
     .command("status", "Current machine status")
     .action(function() {
-      if (vorpal.GRBL) {
-        vorpal.ui.log(JSON.stringify(vorpal.GRBL.machine, null, 2));
-      }
+      vorpal.ui.log(JSON.stringify(vorpal.GRBL.machine, null, 2));
       return Promise.resolve();
     });
 };

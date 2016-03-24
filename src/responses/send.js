@@ -12,6 +12,7 @@ module.exports = function(command) {
     };
     command.grbl.grblPort.write(command.text);
     command.grbl.grblPort.write("\n");
+    command.vorpal.log(command.text);
     resolve(command);
   });
 };

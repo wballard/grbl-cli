@@ -10,7 +10,7 @@ module.exports = function(command) {
     let last = command.grbl.machine.last;
     if (last) {
       command.vorpal.log(
-        messages.error(`${last.file}:${last.line}`),
+        messages.error(`${last.file}:${last.line}\n`),
         messages.error(last.text),
         messages.error(`\n  ${command.message}`),
         "\n"

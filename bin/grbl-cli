@@ -19,7 +19,11 @@ fs.readdirSync(directoryName).forEach(function(commandModule) {
 let cli = vorpal
   .delimiter("grbl>")
   .show();
-cli.exec("connect cu.usbmodem14321")
-  //.then(() => cli.exec("play test/sample.gcode"))
-  .then( () => cli.exec(""))
-  .then(() => cli.exec(""));
+
+if (process.env.DEBUG) {
+  cli.exec("connect cu.usbmodem14321");
+
+  setTimeout( () => {
+    cli.exec("play ../gcode/walkpaws.gcode");
+  }, 2000);
+}

@@ -9,9 +9,11 @@ Provide a throttled observable of events off of a gamepad. The rules:
 * All actions are enqueued back to grbl
 * DPad buttons move X or Y by 0.1mm incrementally
 */
-module.exports = function(grbl) {
+module.exports = function(vorpal, grbl) {
   let ps3Pad = new GamePad("ps3/dualshock3");
-  ps3Pad.connect();
+  try {
+    ps3Pad.connect();
+  } catch (e) { }
 
   const interval = 200;
 
@@ -110,7 +112,7 @@ module.exports = function(grbl) {
     })
     //and a home button
     , Rx.Observable.fromEvent(ps3Pad, "psx:press").do(() => {
-      grbl.grblPort.write("$h\n");
+      vorpal.exec("home");
     })
   )
     .finally(() => {

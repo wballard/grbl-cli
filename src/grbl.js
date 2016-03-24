@@ -47,6 +47,7 @@ const Rx = require("rx")
   , status_parser = require("./status_parser.js")
   , FIFO = require("./fifo.js")
   , path = require("path")
+  , prompts = require("./prompts.js")
   , controller = require("./controller.js");
 
 Rx.config.longStackSupport = true;
@@ -61,9 +62,10 @@ module.exports = class GRBL {
     this.grblPort = grblPort;
     this.machine = {
       state: {}
-      ,settings: {}
+      , settings: {}
     };
     this.jog = 0.1;
+    this.vorpal = vorpal;
     //bridge out events coming in from an event source to an observable
     let eventAction = (object, name) => {
       return Rx.Observable
@@ -89,15 +91,16 @@ module.exports = class GRBL {
       , eventAction(vorpal, "mode_enter")
       , eventAction(vorpal, "mode_exit")
       , status
-      , controller(this)
+      , controller(vorpal, this)
     )
       //Here is a chance to parse any data coming in from GRBL and turn it to
       //a structured object instead of just a string
       .map((command) => {
-        if (command && Object.is("data", command.action))
+        if (command && Object.is("data", command.action)) {
           return status_parser(command.data);
-        else
+        } else {
           return command;
+        }
       })
       .do((command) => {
         if (command) {
@@ -108,7 +111,22 @@ module.exports = class GRBL {
       .actionPacked(path.join(__dirname, "responses"))
       //gets the whole observable going, with message printing
       .subscribe(
-      undefined
+      () => {
+        const
+          m = grbl.machine.state.machine_position
+          , w = grbl.machine.state.work_position;
+        let ret = "";
+        let pfn = prompts[grbl.machine.state.status];
+        if (pfn)
+          ret += `${pfn()} `;
+        if (m)
+          ret += `m:(${m.x},${m.y},${m.z}) w:(${w.x},${w.y},${w.z}) grbl>`;
+        else
+          ret += "grbl>";
+        if (grbl.direct)
+          ret += " direct>";
+        vorpal.ui.delimiter(ret);
+      }
       , (e) => {
         if (e) vorpal.log(e.toString());
       }
@@ -137,7 +155,7 @@ module.exports = class GRBL {
   OH NOES! Throw away all queued commands, we have hit a bad error. 
   */
   reset() {
-    this.fifo.drain();
+    this.vorpal.exec("reset");
   }
 
   /*

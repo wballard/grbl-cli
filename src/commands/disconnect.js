@@ -15,11 +15,9 @@ module.exports = function(vorpal) {
   vorpal
     .command("disconnect", "Disconnect from your GRBL device")
     .action(function() {
-      if (vorpal.GRBL) {
-        vorpal.ui.delimiter("grbl>");
-        vorpal.GRBL.close();
-        delete vorpal.GRBL;
-      }
+      vorpal.ui.delimiter("grbl>");
+      vorpal.GRBL.close();
+      delete vorpal.GRBL;
       return Promise.resolve();
     });
 };

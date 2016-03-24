@@ -15,7 +15,8 @@
 				"--nolazy"
 			],
 			"env": {
-				"NODE_ENV": "development"
+				"NODE_ENV": "development",
+        "DEBUG": 1
 			},
 			"externalConsole": false,
 			"sourceMaps": true,

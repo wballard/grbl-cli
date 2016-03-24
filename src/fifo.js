@@ -2,7 +2,7 @@
 const Rx = require("rx");
 
 /*
-This is a queuable, drainable FIFO that you bridge into an observable sequence.
+This is a queuable, eeeeeable FIFO that you bridge into an observable sequence.
 */
 module.exports = class FIFO {
   /*
@@ -19,7 +19,6 @@ module.exports = class FIFO {
       .do((line) => {
         if (line.end)
           fifo.drain = false;
-        fifo.request(1);
       })
       .do(() => {
         if (fifo.drain)
@@ -46,12 +45,10 @@ module.exports = class FIFO {
   }
 
   /*
-  Queue up  an observeable of commands, this has an end marker
-  so you know when a batch is done.
+  Queue up an observeable of commands.
   */
   enqueue(commands) {
     this.enqueued.onNext(commands);
-    this.enqueued.onNext(Rx.Observable.of({ end: true }));
   }
 
 };

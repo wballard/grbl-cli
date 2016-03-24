@@ -8,9 +8,7 @@ module.exports = function(vorpal) {
   vorpal
     .command("pause", "Pause current program run")
     .action(function() {
-      if (vorpal.GRBL) {
-        vorpal.GRBL.grblPort.write("!\n");
-      }
+      vorpal.GRBL.grblPort.write("!");
       return Promise.resolve();
     });
 };
