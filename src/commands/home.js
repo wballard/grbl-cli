@@ -4,16 +4,20 @@
 Home the machine, setting up the machine zero.
 */
 
-const Rx = require("rx");
+const Rx = require("rx")
+  , messages = require("../messages.js");
 
 module.exports = function(vorpal) {
   vorpal
     .command("home", "Home the machine")
+    .validate(function() {
+      return messages.connected(vorpal);
+    })
     .action(function() {
       vorpal.GRBL.enqueue(
         Rx.Observable.of(
           {
-            text: "$g\n$#\n$$"
+            text: "$h"
             , action: "send"
           }
         ));

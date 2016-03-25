@@ -117,6 +117,5 @@ module.exports = function(vorpal, grbl) {
   )
     .finally(() => {
       ps3Pad.disconnect();
-      ps3Pad._usb.close();
     });
 };

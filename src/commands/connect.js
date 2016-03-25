@@ -7,6 +7,7 @@ the serial port with a line oriented style.
 
 let Promise = require("bluebird")
   , GRBL = require("../grbl.js")
+  , messages = require("../messages.js")
   , serialport = require("serialport");
 
 module.exports = function(vorpal) {
@@ -19,10 +20,7 @@ module.exports = function(vorpal) {
         .map((port) => `${port.comName}`.split("/")[2]);
     })
     .validate(function() {
-      if (vorpal.GRBL)
-        return `You must ${vorpal.chalk.cyan("disconnect")} first`;
-      else
-        return true;
+      return messages.disconnect(vorpal);
     })
     .action(function(args) {
       args.options.baudrate = Number(args.options.baudrate || 115200);

@@ -14,10 +14,7 @@ module.exports = function(vorpal) {
   vorpal
     .command("play <filename...>", "Run all the GCODE in a file")
     .validate(function() {
-      if (vorpal.GRBL)
-        return true;
-      else
-        return `You must ${vorpal.chalk.cyan("connect")} first`;
+      return messages.connected(vorpal);
     })
     .autocomplete(fsAutocomplete())
     .action(function(args) {

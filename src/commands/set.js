@@ -4,11 +4,15 @@
 Set configurable machine properties, or with no arguments, list.
 */
 
-const Rx = require("rx");
+const Rx = require("rx")
+  , messages = require("../messages.js");
 
 module.exports = function(vorpal) {
   vorpal
     .command("set [register] [value]", "Set GRBL parameter registers")
+    .validate(function() {
+      return messages.connected(vorpal);
+    })
     .action(function(args) {
       args.register = `${args.register}`;
       let text = "";
