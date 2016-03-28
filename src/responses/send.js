@@ -1,6 +1,6 @@
 "use strict";
 /*
-Ask GRBL for position status.
+Send text to GRBL.
 */
 
 module.exports = function(command) {
@@ -11,7 +11,6 @@ module.exports = function(command) {
       text: command.text
     };
     command.grbl.grblPort.write(command.text);
-    command.grbl.grblPort.write("\n");
     command.vorpal.log(command.text);
     resolve(command);
   });

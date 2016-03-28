@@ -36,7 +36,7 @@ module.exports = function(vorpal) {
                       {
                         file: filename
                         , line: lineNumber++
-                        , text: line
+                        , text: `${line}`
                         , action: "send"
                       }
                     ));
@@ -63,9 +63,6 @@ module.exports = function(vorpal) {
             });
 
           });
-        })
-        .then(() => {
-          console.error('done');
         });
     });
 };

@@ -4,8 +4,7 @@
 Set configurable machine properties, or with no arguments, list.
 */
 
-const Rx = require("rx")
-  , messages = require("../messages.js");
+const messages = require("../messages.js");
 
 module.exports = function(vorpal) {
   vorpal
@@ -19,19 +18,17 @@ module.exports = function(vorpal) {
       if (args.register && args.value) {
         if (!args.register.startsWith("$"))
           args.register = `$${args.register}`;
-        text = `${args.register}=${args.value}`;
+        text = `${args.register}=${args.value}\n`;
 
       } else {
-        text = "$$";
+        text = "$$\n";
       }
       vorpal.GRBL.enqueue(
-        Rx.Observable.of(
-          {
-            text: text
-            , action: "send"
-          }
-        ));
-      vorpal.GRBL.next();
+        {
+          text
+          , action: "send"
+        }
+      );
       return Promise.resolve();
     });
 };

@@ -9,6 +9,8 @@ module.exports = class FIFO {
   Set up an observable subject, which serves as a controlled entry point to 
   dispense one bit of data at a time, but allow queueing up multiple observable
   sequences.
+  
+  If we are draining -- don't pass those along, swallow them up.
   */
   constructor() {
     this.enqueued = new Rx.Subject();

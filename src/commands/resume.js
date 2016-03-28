@@ -4,8 +4,7 @@
 Resume the current program run.
 */
 
-const Rx = require("rx")
-  , messages = require("../messages.js");
+const messages = require("../messages.js");
 
 module.exports = function(vorpal) {
   vorpal
@@ -14,7 +13,12 @@ module.exports = function(vorpal) {
       return messages.connected(vorpal);
     })
     .action(function() {
-      vorpal.GRBL.grblPort.write("~");
+      vorpal.GRBL.direct(
+        {
+          text: "~"
+          , action: "send"
+        }
+      );
       return Promise.resolve();
     });
 };

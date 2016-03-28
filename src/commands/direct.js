@@ -22,7 +22,7 @@ module.exports = function(vorpal) {
     .action(function(command) {
       vorpal.GRBL.enqueue(Rx.Observable.of({
         action: "send"
-        , text: command
+        , text: `${command}\n`
       }));
       vorpal.GRBL.next();
       return Promise.resolve();

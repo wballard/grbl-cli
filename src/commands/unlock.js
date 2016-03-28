@@ -4,8 +4,7 @@
 Unlock the machine after an alarm.
 */
 
-const Rx = require("rx")
-  , messages = require("../messages.js");
+const messages = require("../messages.js");
 
 module.exports = function(vorpal) {
   vorpal
@@ -15,13 +14,11 @@ module.exports = function(vorpal) {
     })
     .action(function() {
       vorpal.GRBL.enqueue(
-        Rx.Observable.of(
-          {
-            text: "$x"
-            , action: "send"
-          }
-        ));
-      vorpal.GRBL.next();
+        {
+          text: "$x\n"
+          , action: "send"
+        }
+      );
       return Promise.resolve();
     });
 };

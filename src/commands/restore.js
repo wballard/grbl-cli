@@ -5,8 +5,7 @@ Reset the machine. This will stop the world and cut in line, flush out all
 buffered commands and generally act just like you booted up.
 */
 
-const Rx = require("rx")
-  , messages = require("../messages.js");
+const messages = require("../messages.js");
 
 module.exports = function(vorpal) {
   vorpal
@@ -16,13 +15,11 @@ module.exports = function(vorpal) {
     })
     .action(function() {
       vorpal.GRBL.enqueue(
-        Rx.Observable.of(
-          {
-            text: "$RST=*"
-            , action: "send"
-          }
-        ));
-      vorpal.GRBL.grbl.next();
+        {
+          text: "$RST=*\n"
+          , action: "send"
+        }
+      );
       return Promise.resolve();
     });
 };

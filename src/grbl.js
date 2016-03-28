@@ -74,8 +74,10 @@ module.exports = class GRBL {
           return { action: name, data };
         });
     };
-    //fifo for GCODE commands that need parsing
+    //fifo for GCODE commands that need to be throttled
     this.fifo = new FIFO();
+    //direct command processing, no queue
+    this.direct = new Rx.Subject();
     //ask for status on a timer, 5Hz
     let status = Rx.Observable.timer(0, 200)
       .map(() => {
@@ -84,6 +86,7 @@ module.exports = class GRBL {
     //and observe all the commands together
     this.commands = Rx.Observable.merge(
       this.fifo.observable
+      , this.direct
       , eventAction(grblPort, "open")
       , eventAction(grblPort, "close")
       , eventAction(grblPort, "error")
@@ -160,10 +163,21 @@ module.exports = class GRBL {
 
   /*
   Put a command in queue to send to GRBL, this follows the send / ok response
-  protocol.
+  protocol. Smart enough to figure if you just sent in an action, it wraps in an
+  observable if you do.
   */
   enqueue(thing) {
-    this.fifo.enqueue(thing);
+    if (thing.action)
+      this.fifo.enqueue((Rx.Observable.of(thing)));
+    else
+      this.fifo.enqueue(thing);
+  }
+
+  /*
+  Directly run a command, no queueing.
+  */
+  do(thing) {
+    this.direct.onNext((Rx.Observable.of(thing)));
   }
 
 };

@@ -2,9 +2,7 @@
 /*
 Set zero, or an offset for a work coordinate system.
 */
-const Promise = require("bluebird")
-  , _ = require("lodash")
-  , Rx = require("rx");
+const _ = require("lodash");
 const work_systems = {
   "G54": "P1",
   "G55": "P2",
@@ -28,12 +26,10 @@ module.exports = function(vorpal) {
     })
     .action(function(args) {
       vorpal.GRBL.enqueue(
-        Rx.Observable.of(
-          {
-            action: "send",
-            text: `G10${work_systems[args.work_coordinate_system.toUpperCase()]}L20${args.axis}${args.offset || 0}`
-          }
-        )
+        {
+          text: `G10${work_systems[args.work_coordinate_system.toUpperCase()]}L20${args.axis}${args.offset || 0}\n`
+          , action: "send"
+        }
       );
       return Promise.resolve();
     });
