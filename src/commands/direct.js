@@ -20,11 +20,10 @@ module.exports = function(vorpal) {
       return messages.connected(vorpal);
     })
     .action(function(command) {
-      vorpal.GRBL.enqueue(Rx.Observable.of({
+      vorpal.GRBL.do(Rx.Observable.of({
         action: "send"
         , text: `${command}\n`
       }));
-      vorpal.GRBL.next();
       return Promise.resolve();
     });
 };

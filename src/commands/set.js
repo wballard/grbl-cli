@@ -23,7 +23,7 @@ module.exports = function(vorpal) {
       } else {
         text = "$$\n";
       }
-      vorpal.GRBL.enqueue(
+      vorpal.GRBL.do(
         {
           text
           , action: "send"

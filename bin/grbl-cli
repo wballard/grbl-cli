@@ -21,9 +21,9 @@ let cli = vorpal
   .show();
 
 if (process.env.DEBUG) {
-  cli.exec("connect cu.usbmodem14321");
+  cli.exec("connect cu.usbmodem14331");
 
   setTimeout( () => {
-    cli.exec("play ../gcode/walkpaws.gcode");
+    cli.exec("play ./test/sample_error.gcode");
   }, 2000);
 }

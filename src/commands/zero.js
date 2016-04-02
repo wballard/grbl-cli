@@ -25,7 +25,7 @@ module.exports = function(vorpal) {
       return true;
     })
     .action(function(args) {
-      vorpal.GRBL.enqueue(
+      vorpal.GRBL.do(
         {
           text: `G10${work_systems[args.work_coordinate_system.toUpperCase()]}L20${args.axis}${args.offset || 0}\n`
           , action: "send"

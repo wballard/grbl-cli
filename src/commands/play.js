@@ -20,49 +20,57 @@ module.exports = function(vorpal) {
     .action(function(args) {
       return Promise.resolve(args.filename)
         .each(function(filename) {
-          return new Promise((resolve, reject) => {
+          return new Promise((resolve) => {
             let lines = byline(fs.createReadStream(filename, { encoding: "utf8" }));
             let lineNumber = 1;
-            lines.on("data", (line) => {
-              gcode.parseString(line, (err, command) => {
-                if (err) {
-                  vorpal.log(messages.error(err), messages.error(line));
-                  lines.close();
-                  reject();
-                }
+            let parse = Rx.Observable.fromNodeCallback(gcode.parseString);
+
+            //turn lines of data into parsed command objects ready to send
+            let data = Rx.Observable
+              .fromEvent(lines, "data")
+              .where((line) => line.length)
+              .selectMany((line) => {
+                return parse(line);
+              })
+              .map((command) => {
                 if (command.length) {
-                  vorpal.GRBL.enqueue(
-                    Rx.Observable.of(
-                      {
-                        file: filename
-                        , line: lineNumber++
-                        , text: `${line}`
-                        , action: "send"
-                      }
-                    ));
-                } else {
-                  vorpal.log(messages.info(line));
-                }
-              });
-            });
-            lines.on("end", () => {
-              vorpal.GRBL.enqueue(
-                Rx.Observable.of(
-                  {
+                  //a full command to send along to grbl
+                  return {
                     file: filename
                     , line: lineNumber++
-                    , text: ""
-                    , end: true
+                    , text: `${command.source}\n`
                     , action: "send"
-                  }
-                ));
-              resolve();
-            });
-            lines.on("error", () => {
-              reject();
-            });
+                    , afterSend: () => vorpal.log(messages.info(command.source))
+                    , parsedCode: command
+                  };
+                } else {
+                  //just an instream logging, no sending
+                  return {
+                    file: filename
+                    , line: lineNumber++
+                    , text: `${command.source}`
+                    , action: "continue"
+                  };
+                }
+              });
+
+            //at the end of the gcode stream, pop in a marker 'end'
+            let end = Rx.Observable.fromEvent(lines, "end")
+              .map(() => {
+                return {
+                  file: filename
+                  , line: lineNumber++
+                  , text: ""
+                  , end: true
+                  , action: "send"
+                };
+              });
+            vorpal.GRBL.enqueue(Rx.Observable.merge(data, end));
+            resolve();
 
           });
+          //each
         });
+      //action
     });
 };

@@ -48,6 +48,7 @@ const Rx = require("rx")
   , FIFO = require("./fifo.js")
   , path = require("path")
   , prompts = require("./prompts.js")
+  , messages = require("./messages.js")
   , controller = require("./controller.js");
 
 Rx.config.longStackSupport = true;
@@ -77,7 +78,7 @@ module.exports = class GRBL {
     //fifo for GCODE commands that need to be throttled
     this.fifo = new FIFO();
     //direct command processing, no queue
-    this.direct = new Rx.Subject();
+    this.command = new Rx.Subject();
     //ask for status on a timer, 5Hz
     let status = Rx.Observable.timer(0, 200)
       .map(() => {
@@ -86,7 +87,7 @@ module.exports = class GRBL {
     //and observe all the commands together
     this.commands = Rx.Observable.merge(
       this.fifo.observable
-      , this.direct
+      , this.command
       , eventAction(grblPort, "open")
       , eventAction(grblPort, "close")
       , eventAction(grblPort, "error")
@@ -130,8 +131,11 @@ module.exports = class GRBL {
           ret += " direct>";
         vorpal.ui.delimiter(ret);
       }
-      , (e) => {
-        if (e) vorpal.log(e.toString());
+      , (err) => {
+        if (err) {
+          vorpal.log(messages.error(err));
+          grbl.fifo.drain();
+        }
       }
       , this.close
       );
@@ -144,14 +148,6 @@ module.exports = class GRBL {
   close() {
     this.grblPort.close();
     this.commands.dispose();
-  }
-
-  /*
-  Pump along the FIFO queue to run the next available command
-  streaming to GRBL with the send / ok response protocol.
-  */
-  next() {
-    this.fifo.next();
   }
 
   /*
@@ -171,13 +167,14 @@ module.exports = class GRBL {
       this.fifo.enqueue((Rx.Observable.of(thing)));
     else
       this.fifo.enqueue(thing);
+    this.fifo.start();
   }
 
   /*
   Directly run a command, no queueing.
   */
   do(thing) {
-    this.direct.onNext((Rx.Observable.of(thing)));
+    this.command.onNext(thing);
   }
 
 };

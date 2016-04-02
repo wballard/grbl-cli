@@ -14,7 +14,7 @@ module.exports = function(vorpal) {
       return messages.connected(vorpal);
     })
     .action(function() {
-      vorpal.GRBL.enqueue(
+      vorpal.GRBL.do(
         {
           text: "$RST=*\n"
           , action: "send"

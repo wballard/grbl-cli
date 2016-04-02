@@ -14,7 +14,8 @@ module.exports = function(vorpal) {
       return messages.connected(vorpal);
     })
     .action(function() {
-      vorpal.GRBL.direct(
+      vorpal.GRBL.fifo.drain();
+      vorpal.GRBL.do(
         {
           text: "\x18"
           , action: "send"

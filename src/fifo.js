@@ -9,8 +9,6 @@ module.exports = class FIFO {
   Set up an observable subject, which serves as a controlled entry point to 
   dispense one bit of data at a time, but allow queueing up multiple observable
   sequences.
-  
-  If we are draining -- don't pass those along, swallow them up.
   */
   constructor() {
     this.enqueued = new Rx.Subject();
@@ -19,15 +17,21 @@ module.exports = class FIFO {
       .controlled();
     this.observable = this.fifo
       .do((line) => {
-        if (line.end)
+        if (line.end) {
+          fifo.running = false;
           fifo.drain = false;
+        } else {
+          fifo.running = true;
+        }
       })
       .do(() => {
+        //if draining, keep on draining until empty
         if (fifo.drain)
           fifo.request(1);
       })
-      .where((line) => {
-        return line.text && !fifo.drain;
+      .where(() => {
+        //only execute if we are not draining
+        return !fifo.drain;
       });
   }
 
@@ -43,6 +47,14 @@ module.exports = class FIFO {
   Send along the next command.
   */
   next() {
+    if (this.fifo.running)
+      this.fifo.request(1);
+  }
+
+  /*
+  Start up queue processing by asking for a command.
+  */
+  start() {
     this.fifo.request(1);
   }
 

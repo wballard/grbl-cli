@@ -5,7 +5,7 @@ Ask GRBL for position status.
 
 module.exports = function(command) {
   return new Promise(function(resolve) {
-    command.grbl.direct(
+    command.grbl.do(
       {
         text: "?"
         , action: "send"

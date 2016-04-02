@@ -13,7 +13,7 @@ module.exports = function(vorpal) {
       return messages.connected(vorpal);
     })
     .action(function() {
-      vorpal.GRBL.direct(
+      vorpal.GRBL.do(
         {
           text: "~"
           , action: "send"
