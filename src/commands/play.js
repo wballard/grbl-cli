@@ -29,18 +29,18 @@ module.exports = function(vorpal) {
             let data = Rx.Observable
               .fromEvent(lines, "data")
               .where((line) => line.length)
-              .selectMany((line) => {
+              .concatMap((line) => {
                 return parse(line);
-              })
-              .map((command) => {
+              }
+              , (line, command) => {
                 if (command.length) {
                   //a full command to send along to grbl
                   return {
                     file: filename
                     , line: lineNumber++
-                    , text: `${command.source}\n`
+                    , text: `${line}\n`
                     , action: "send"
-                    , afterSend: () => vorpal.log(messages.info(command.source))
+                    , afterSend: () => vorpal.log(messages.info(line))
                     , parsedCode: command
                   };
                 } else {
@@ -48,7 +48,7 @@ module.exports = function(vorpal) {
                   return {
                     file: filename
                     , line: lineNumber++
-                    , text: `${command.source}`
+                    , text: `${line}`
                     , action: "continue"
                   };
                 }
