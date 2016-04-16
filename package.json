@@ -2,7 +2,10 @@
   "name": "grbl-cli",
   "version": "1.0.0",
   "description": "A conversational command line interface to control your GRBL based CNC machine.",
-  "main": "index.js",
+  "bin": {
+    "grbl": "bin/grbl-cli"
+  },
+  "main": "src/grbl.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -23,6 +26,7 @@
     "gcode": "git@github.com:wballard/node-gcode.git",
     "lodash": "^4.6.1",
     "node-gamepad": "git@github.com:wballard/node-gamepad.git",
+    "node-hid": "^0.5.1",
     "pegjs": "^0.9.0",
     "rx": "^4.1.0",
     "serialport": "^2.0.6",
